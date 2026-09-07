@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiramisu Hub — Fresh, Creamy Tiramisu in Motihari</title>
+<meta name="description" content="Tiramisu Hub — Motihari's premium tiramisu destination. Freshly crafted, rich & creamy tiramisu made with love. Order online or get home delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --bg-dark:#1c0d06;
+    --bg-coffee:#2c1710;
+    --bg-coffee-2:#3a2016;
+    --cream:#faf3e6;
+    --cream-2:#f1e4c9;
+    --gold:#c9a227;
+    --gold-light:#e8c874;
+    --ink:#2c1710;
+    --ink-soft:#5b4230;
+    --on-dark:#f3e9d2;
+    --shadow:0 12px 30px -12px rgba(28,13,6,.45);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:'Jost',sans-serif;color:var(--ink);background:var(--cream);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.logo-word{font-family:'Playfair Display',serif;}
+  a{color:inherit;text-decoration:none;}
+  img,svg{max-width:100%;display:block;}
+  ul{list-style:none;margin:0;padding:0;}
+  section{padding:88px 24px;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  .eyebrow{font-size:12.5px;letter-spacing:3px;color:var(--gold);opacity:.85;margin:0 0 10px;}
+  .section-title{font-size:clamp(28px,4vw,40px);font-weight:700;margin:0 0 14px;line-height:1.15;}
+  .section-lede{max-width:560px;color:var(--ink-soft);font-size:16px;line-height:1.7;margin:0 0 40px;}
+  .on-dark .section-lede{color:rgba(243,233,210,.75);}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:999px;
+    font-size:14.5px;font-weight:600;letter-spacing:.3px;cursor:pointer;border:1px solid transparent;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-gold{background:var(--gold);color:var(--bg-dark);}
+  .btn-gold:hover{background:var(--gold-light);box-shadow:0 8px 20px -6px rgba(201,162,39,.55);}
+  .btn-outline{border-color:var(--gold);color:var(--gold-light);background:transparent;}
+  .btn-outline:hover{background:rgba(201,162,39,.12);}
+  .btn-outline-dark{border-color:var(--ink);color:var(--ink);background:transparent;}
+  .btn-outline-dark:hover{background:rgba(44,23,16,.06);}
+  .btn-sm{padding:9px 18px;font-size:13px;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+
+  /* ---------- Nav ---------- */
+  #nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(28,13,6,.72);backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(201,162,39,.18);
+    transition:background .3s ease;
+  }
+  #nav .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1180px;}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--on-dark);}
+  .brand .mark{
+    width:38px;height:38px;border-radius:50%;border:1.5px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-light);font-size:14px;
+  }
+  .brand .word{font-size:19px;letter-spacing:.5px;font-weight:700;}
+  #nav-links{display:flex;align-items:center;gap:26px;}
+  #nav-links a{color:rgba(243,233,210,.82);font-size:14px;font-weight:500;}
+  #nav-links a:hover{color:var(--gold-light);}
+  #nav-actions{display:flex;align-items:center;gap:14px;}
+  #cart-toggle{
+    position:relative;background:none;border:1px solid rgba(201,162,39,.5);color:var(--on-dark);
+    width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  #cart-toggle svg{width:18px;height:18px;stroke:var(--gold-light);}
+  #cart-count{
+    position:absolute;top:-6px;right:-6px;background:var(--gold);color:var(--bg-dark);
+    font-size:11px;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  }
+  #nav-burger{display:none;background:none;border:none;color:var(--on-dark);font-size:22px;cursor:pointer;}
+  @media (max-width:860px){
+    #nav-links{position:fixed;top:64px;left:0;right:0;background:var(--bg-coffee);flex-direction:column;
+      padding:18px 24px;gap:16px;transform:translateY(-8px);opacity:0;pointer-events:none;transition:.22s ease;
+      border-bottom:1px solid rgba(201,162,39,.18);}
+    #nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto;}
+    #nav-burger{display:block;}
+  }
+
+  /* ---------- Hero ---------- */
+  #hero{
+    position:relative;padding:170px 24px 100px;background:
+      radial-gradient(circle at 20% 15%, rgba(232,200,116,.10), transparent 35%),
+      radial-gradient(circle at 85% 10%, rgba(232,200,116,.08), transparent 32%),
+      linear-gradient(180deg,var(--bg-dark) 0%, var(--bg-coffee) 60%, var(--bg-coffee-2) 100%);
+    color:var(--on-dark);overflow:hidden;
+  }
+  #hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;}
+  @media (max-width:900px){ #hero .wrap{grid-template-columns:1fr;} #hero{padding-top:140px;} }
+  #hero .tag-hi{font-size:15px;color:var(--gold-light);letter-spacing:.4px;margin-bottom:14px;font-style:italic;}
+  #hero h1{font-size:clamp(42px,6.4vw,72px);line-height:1.02;margin:0 0 18px;letter-spacing:1px;}
+  #hero p.desc{color:rgba(243,233,210,.78);font-size:17px;max-width:440px;line-height:1.7;margin:0 0 32px;}
+  #hero .cta-row{display:flex;gap:16px;flex-wrap:wrap;}
+  .hero-art{position:relative;}
+  .hero-art svg{width:100%;height:auto;}
+
+  /* ---------- Featured Flavors ---------- */
+  #flavors{background:var(--cream);}
+  .flavor-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;}
+  @media (max-width:720px){.flavor-grid{grid-template-columns:1fr;}}
+  .p-card{
+    background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+    border:1px solid rgba(44,23,16,.06);
+    opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;
+  }
+  .p-card.in{opacity:1;transform:translateY(0);}
+  .p-card .art{aspect-ratio:4/3;background:linear-gradient(160deg,#efe2c9,#e4d2a8);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .p-card .art svg{width:78%;}
+  .p-card .body{padding:22px 24px 26px;}
+  .p-card h3{font-size:21px;margin:0 0 6px;}
+  .p-card p{color:var(--ink-soft);font-size:14.5px;line-height:1.6;margin:0 0 16px;}
+  .p-card .row{display:flex;align-items:center;justify-content:space-between;}
+  .p-card .price{font-weight:700;color:var(--ink);font-size:18px;}
+  .add-btn{
+    background:var(--bg-dark);color:var(--gold-light);border:none;border-radius:999px;
+    padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s ease;
+  }
+  .add-btn:hover{background:var(--gold);color:var(--bg-dark);}
+
+  /* ---------- Why us ---------- */
+  #why{background:linear-gradient(180deg,var(--bg-coffee-2),var(--bg-dark));color:var(--on-dark);}
+  .why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+  @media (max-width:900px){.why-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.why-grid{grid-template-columns:1fr;}}
+  .why-card{
+    border:1px solid rgba(201,162,39,.22);border-radius:16px;padding:26px 22px;
+    background:rgba(255,255,255,.02);
+    opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;
+  }
+  .why-card.in{opacity:1;transform:translateY(0);}
+  .why-card .ic{width:40px;height:40px;margin-bottom:16px;stroke:var(--gold-light);fill:none;stroke-width:1.6;}
+  .why-card h3{font-family:'Jost',sans-serif;font-size:16px;font-weight:600;margin:0 0 8px;color:var(--on-dark);}
+  .why-card p{font-size:13.5px;color:rgba(243,233,210,.68);line-height:1.6;margin:0;}
+
+  /* ---------- About ---------- */
+  #about{background:var(--cream-2);}
+  .about-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;}
+  @media (max-width:860px){.about-grid{grid-template-columns:1fr;}}
+  #about p{color:var(--ink-soft);font-size:16px;line-height:1.8;margin:0 0 16px;}
+  .about-art{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:linear-gradient(160deg,#2c1710,#1c0d06);padding:36px;}
+
+  /* ---------- Menu ---------- */
+  #menu{background:var(--cream);}
+  .menu-tools{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:34px;}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;}
+  .filter-chip{
+    border:1px solid rgba(44,23,16,.18);background:#fff;color:var(--ink);
+    padding:9px 18px;border-radius:999px;font-size:13.5px;cursor:pointer;transition:.2s ease;
+  }
+  .filter-chip.active{background:var(--bg-dark);color:var(--gold-light);border-color:var(--bg-dark);}
+  #menu-search{
+    border:1px solid rgba(44,23,16,.18);border-radius:999px;padding:10px 18px;font-size:14px;
+    font-family:'Jost',sans-serif;min-width:220px;background:#fff;
+  }
+  #menu-search:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  #menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  @media (max-width:900px){#menu-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){#menu-grid{grid-template-columns:1fr;}}
+  #menu-empty{display:none;text-align:center;padding:50px 20px;color:var(--ink-soft);border:1px dashed rgba(44,23,16,.25);border-radius:16px;}
+  #menu-empty h3{margin:0 0 8px;font-size:19px;color:var(--ink);}
+
+  /* ---------- How to order ---------- */
+  #how{background:linear-gradient(180deg,var(--bg-dark),var(--bg-coffee));color:var(--on-dark);}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;counter-reset:step;}
+  @media (max-width:800px){.steps{grid-template-columns:1fr;}}
+  .step{position:relative;padding:30px 24px 24px;border:1px solid rgba(201,162,39,.22);border-radius:16px;}
+  .step .num{
+    font-family:'Playfair Display',serif;font-size:34px;color:var(--gold-light);opacity:.55;margin-bottom:10px;
+  }
+  .step h3{font-size:18px;margin:0 0 8px;}
+  .step p{font-size:14px;color:rgba(243,233,210,.7);line-height:1.6;margin:0;}
+
+  /* ---------- Location ---------- */
+  #location{background:var(--cream-2);}
+  .loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:stretch;}
+  @media (max-width:900px){.loc-grid{grid-template-columns:1fr;}}
+  .loc-info{display:flex;flex-direction:column;justify-content:center;gap:18px;}
+  .loc-info .addr{font-size:18px;font-weight:600;line-height:1.5;}
+  .loc-info .sub{color:var(--ink-soft);font-size:14.5px;}
+  .banner{
+    display:inline-flex;align-items:center;gap:10px;background:rgba(201,162,39,.14);
+    border:1px solid rgba(201,162,39,.35);color:var(--ink);padding:10px 16px;border-radius:12px;
+    font-size:13.5px;font-weight:600;width:fit-content;
+  }
+  .delivery-rates{
+    border:1px solid rgba(44,23,16,.15);border-radius:14px;padding:16px 18px;
+    background:rgba(255,255,255,.55);max-width:320px;
+  }
+  .delivery-rates h4{margin:0 0 10px;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+  .delivery-rates ul li{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:7px 0;border-bottom:1px dashed rgba(44,23,16,.15);}
+  .delivery-rates ul li:last-child{border-bottom:none;}
+  .delivery-rates ul li span:last-child{font-weight:700;color:var(--ink);}
+  .map-frame{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);min-height:320px;border:1px solid rgba(44,23,16,.08);}
+  .map-frame iframe{width:100%;height:100%;min-height:320px;border:0;display:block;}
+
+  /* ---------- Contact ---------- */
+  #contact{background:linear-gradient(180deg,var(--bg-coffee),var(--bg-dark));color:var(--on-dark);}
+  .contact-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;}
+  @media (max-width:860px){.contact-grid{grid-template-columns:1fr;}}
+  .contact-actions{display:flex;flex-direction:column;gap:14px;margin-top:22px;}
+  .contact-actions a{
+    display:flex;align-items:center;gap:12px;border:1px solid rgba(201,162,39,.3);border-radius:12px;
+    padding:14px 16px;font-size:14.5px;color:var(--on-dark);
+  }
+  .contact-actions a:hover{background:rgba(201,162,39,.08);}
+  .contact-actions svg{width:18px;height:18px;stroke:var(--gold-light);fill:none;stroke-width:1.6;flex-shrink:0;}
+  form#contact-form{display:flex;flex-direction:column;gap:14px;}
+  form#contact-form input, form#contact-form textarea{
+    background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.28);border-radius:10px;
+    padding:13px 14px;color:var(--on-dark);font-family:'Jost',sans-serif;font-size:14.5px;
+  }
+  form#contact-form input::placeholder, form#contact-form textarea::placeholder{color:rgba(243,233,210,.45);}
+  form#contact-form input:focus, form#contact-form textarea:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  #form-status{font-size:13.5px;color:var(--gold-light);min-height:18px;}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--bg-dark);color:rgba(243,233,210,.65);padding:56px 24px 26px;}
+  .foot-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:36px;margin-bottom:36px;}
+  @media (max-width:700px){.foot-grid{grid-template-columns:1fr;}}
+  footer h4{color:var(--on-dark);font-size:14px;letter-spacing:1px;margin:0 0 14px;font-family:'Jost',sans-serif;font-weight:600;}
+  footer ul li{margin-bottom:9px;font-size:14px;}
+  footer ul li a:hover{color:var(--gold-light);}
+  .foot-bottom{border-top:1px solid rgba(201,162,39,.15);padding-top:20px;font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+
+  /* ---------- Cart drawer ---------- */
+  #cart-overlay{position:fixed;inset:0;background:rgba(28,13,6,.5);z-index:199;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  #cart-overlay.open{opacity:1;pointer-events:auto;}
+  #cart-drawer{
+    position:fixed;top:0;right:0;height:100%;width:min(400px,92vw);background:var(--cream);z-index:200;
+    box-shadow:-14px 0 40px rgba(0,0,0,.25);transform:translateX(100%);transition:transform .3s ease;
+    display:flex;flex-direction:column;
+  }
+  #cart-drawer.open{transform:translateX(0);}
+  .cart-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid rgba(44,23,16,.1);}
+  .cart-head h3{margin:0;font-size:19px;}
+  #cart-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink);}
+  #cart-items{flex:1;overflow-y:auto;padding:16px 22px;}
+  .cart-item{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(44,23,16,.08);}
+  .cart-item .ci-name{flex:1;font-size:14.5px;font-weight:600;}
+  .cart-item .ci-price{font-size:13px;color:var(--ink-soft);}
+  .qty{display:flex;align-items:center;gap:8px;}
+  .qty button{width:26px;height:26px;border-radius:50%;border:1px solid rgba(44,23,16,.25);background:#fff;cursor:pointer;font-size:14px;line-height:1;}
+  .qty span{min-width:16px;text-align:center;font-size:14px;}
+  .ci-remove{background:none;border:none;color:#a9432b;font-size:12px;cursor:pointer;margin-left:8px;}
+  #cart-empty{color:var(--ink-soft);font-size:14px;padding:30px 0;text-align:center;}
+  .cart-foot{padding:18px 22px 24px;border-top:1px solid rgba(44,23,16,.1);}
+  .cart-total-row{display:flex;justify-content:space-between;font-size:15px;font-weight:700;margin-bottom:8px;}
+  .cart-total-row.cart-total-sub{font-size:13.5px;font-weight:500;color:var(--ink-soft);}
+  .cart-total-row.cart-grand{border-top:1px dashed rgba(44,23,16,.2);padding-top:10px;margin-top:2px;margin-bottom:16px;}
+  .cart-foot .btn{width:100%;justify-content:center;}
+  .cart-customer{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .cart-customer input{
+    border:1px solid rgba(44,23,16,.2);border-radius:10px;padding:11px 14px;font-size:14px;
+    font-family:'Jost',sans-serif;background:#fff;color:var(--ink);
+  }
+  .cart-customer input:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .cart-customer input.invalid{border-color:#a9432b;}
+  #cust-error{color:#a9432b;font-size:12.5px;min-height:16px;}
+  #map-hint{font-size:11.5px;color:var(--ink-soft);}
+  #delivery-map{height:170px;border-radius:10px;overflow:hidden;border:1px solid rgba(44,23,16,.2);}
+  #delivery-summary{font-size:13px;font-weight:600;color:var(--ink);}
+  #delivery-summary.out-of-range{color:#a9432b;}
+  .stall-pin{background:var(--gold);border:2px solid var(--bg-dark);border-radius:50%;width:14px;height:14px;}
+  .cust-pin{background:#a9432b;border:2px solid #fff;border-radius:50%;width:14px;height:14px;}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav id="nav">
+  <div class="wrap">
+    <a href="#hero" class="brand">
+      <span class="mark">TH</span>
+      <span class="word">Tiramisu Hub</span>
+    </a>
+    <ul id="nav-links">
+      <li><a href="#flavors">Flavors</a></li>
+      <li><a href="#why">Why Us</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#how">How to Order</a></li>
+      <li><a href="#location">Location</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div id="nav-actions">
+      <button id="cart-toggle" aria-label="Open cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.6 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="10" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
+        <span id="cart-count">0</span>
+      </button>
+      <button id="nav-burger" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header id="hero">
+  <div class="wrap">
+    <div>
+      <div class="tag-hi">Har Layer Mein Swaad, Har Bite Mein Khushiyan.</div>
+      <h1>TIRAMISU<br>HUB</h1>
+      <p class="desc">Freshly crafted, rich &amp; creamy tiramisu made with love — served straight from our kitchen in Motihari.</p>
+      <div class="cta-row">
+        <a href="#menu" class="btn btn-gold">Order Now</a>
+        <a href="#flavors" class="btn btn-outline">Explore Flavors</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 420 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gCup" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f6ecd9"/>
+            <stop offset="100%" stop-color="#d8b98a"/>
+          </linearGradient>
+          <linearGradient id="gLayer" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#8a5a34"/>
+            <stop offset="100%" stop-color="#5c3a20"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="210" cy="322" rx="150" ry="18" fill="#000" opacity=".18"/>
+        <path d="M110 120 L140 300 Q210 320 280 300 L310 120 Z" fill="url(#gCup)"/>
+        <path d="M118 150 L302 150 L296 190 L124 190 Z" fill="url(#gLayer)" opacity=".92"/>
+        <path d="M124 210 L296 210 L290 250 L130 250 Z" fill="url(#gLayer)" opacity=".8"/>
+        <path d="M116 120 Q210 100 304 120 L296 150 L124 150 Z" fill="#efe2c9"/>
+        <g fill="#4a2f1c" opacity=".65">
+          <circle cx="150" cy="112" r="2.4"/><circle cx="172" cy="106" r="2.4"/><circle cx="196" cy="114" r="2.4"/>
+          <circle cx="220" cy="105" r="2.4"/><circle cx="244" cy="113" r="2.4"/><circle cx="268" cy="107" r="2.4"/>
+          <circle cx="160" cy="122" r="2"/><circle cx="186" cy="120" r="2"/><circle cx="212" cy="122" r="2"/>
+          <circle cx="238" cy="119" r="2"/><circle cx="262" cy="123" r="2"/>
+        </g>
+        <path d="M116 118 Q210 96 304 118" stroke="#c9a227" stroke-width="2" fill="none" opacity=".7"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ================= FEATURED FLAVORS ================= -->
+<section id="flavors">
+  <div class="wrap">
+    <div class="eyebrow">Signature Menu</div>
+    <h2 class="section-title">Featured Flavors</h2>
+    <p class="section-lede">Two recipes, endless cravings — each made fresh in small batches so every bite tastes like the first.</p>
+    <div class="flavor-grid" id="featured-grid"></div>
+  </div>
+</section>
+
+<!-- ================= WHY US ================= -->
+<section id="why" class="on-dark">
+  <div class="wrap">
+    <div class="eyebrow">What Makes Us Different</div>
+    <h2 class="section-title">Why Tiramisu Hub</h2>
+    <p class="section-lede">Small kitchen, big standards. Here's what goes into every box.</p>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <svg class="ic" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21c-4-1-7-5-7-10 5 0 9 3 10 7 1-4 5-7 10-7 0 5-3 9-7 10-2 .5-4 .5-6 0Z"/></svg>
+        <h3>Fresh Ingredients</h3>
+        <p>Mascarpone, cocoa, and coffee sourced fresh and prepped daily — nothing sits in storage.</p>
+      </div>
+      <div class="why-card reveal">
+        <svg class="ic" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10h13a3 3 0 0 1 0 6H4v-6ZM4 10V6h13v4M8 3v2M12 3v2M16 3v2"/></svg>
+        <h3>Rich &amp; Creamy</h3>
+        <p>A silky mascarpone layer and just the right coffee soak, every single time.</p>
+      </div>
+      <div class="why-card reveal">
+        <svg class="ic" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-8-4.5-8-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6.5-8 11-8 11Z"/></svg>
+        <h3>Made With Love</h3>
+        <p>Small-batch, hand-finished desserts — never mass-produced, never rushed.</p>
+      </div>
+      <div class="why-card reveal">
+        <svg class="ic" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16V7a1 1 0 0 1 1-1h9v10M3 16h10M13 10h4l4 4v2h-2M3 16a2 2 0 1 0 4 0M15 16a2 2 0 1 0 4 0"/></svg>
+        <h3>Home Delivery Available</h3>
+        <p>Order ahead and we'll bring it straight to your door, fresh and chilled.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about">
+  <div class="wrap about-grid">
+    <div class="about-art">
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="150" cy="150" r="96" fill="none" stroke="#c9a227" stroke-width="1.5" opacity=".55"/>
+        <circle cx="150" cy="150" r="76" fill="none" stroke="#e8c874" stroke-width="1" opacity=".4"/>
+        <text x="150" y="160" text-anchor="middle" font-family="Playfair Display, serif" font-size="34" fill="#e8c874" font-weight="700">TH</text>
+      </svg>
+    </div>
+    <div>
+      <div class="eyebrow">Our Story</div>
+      <h2 class="section-title">A Motihari Dessert Destination</h2>
+      <p>Tiramisu Hub started with one simple idea: Motihari deserved a place to get proper, fresh tiramisu — not a slice that's been sitting in a display case for days.</p>
+      <p>Every box we send out is layered, dusted, and packed the same day, near Janpul, in front of Smart Bazar. Whether you're celebrating something big or just craving something rich and creamy, we make it feel like an occasion.</p>
+      <p>No shortcuts, no artificial shelf-life tricks — just honest ingredients, made fresh, made local.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MENU ================= -->
+<section id="menu">
+  <div class="wrap">
+    <div class="eyebrow">Order Online</div>
+    <h2 class="section-title">Our Menu</h2>
+    <p class="section-lede">Browse by category or search for a flavor.</p>
+    <div class="menu-tools">
+      <div class="filters" id="filters">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="classic">Classic</button>
+        <button class="filter-chip" data-filter="biscoff">Biscoff</button>
+        <button class="filter-chip" data-filter="specials">Specials</button>
+      </div>
+      <input type="search" id="menu-search" placeholder="Search flavors..." aria-label="Search menu">
+    </div>
+    <div id="menu-grid"></div>
+    <div id="menu-empty">
+      <h3>Nothing here yet</h3>
+      <p>New seasonal flavors are on the way — follow <strong>@imaajax</strong> or <strong>@aressvlog</strong> so you don't miss the drop.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW TO ORDER ================= -->
+<section id="how" class="on-dark">
+  <div class="wrap">
+    <div class="eyebrow">Simple &amp; Fast</div>
+    <h2 class="section-title">How to Order</h2>
+    <p class="section-lede">Three steps between you and your next tiramisu.</p>
+    <div class="steps">
+      <div class="step reveal"><div class="num">01</div><h3>Choose Your Flavor</h3><p>Browse Classic, Biscoff, or an upcoming special and add it to your cart.</p></div>
+      <div class="step reveal"><div class="num">02</div><h3>Place Your Order</h3><p>Review your cart and send it straight to us on WhatsApp — no app download needed.</p></div>
+      <div class="step reveal"><div class="num">03</div><h3>Enjoy Fresh Tiramisu</h3><p>Pick it up near Janpul or have it delivered fresh to your door.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LOCATION ================= -->
+<section id="location">
+  <div class="wrap loc-grid">
+    <div class="loc-info">
+      <div class="eyebrow">Find Us</div>
+      <h2 class="section-title" style="margin-bottom:6px;">Location &amp; Delivery</h2>
+      <div class="addr">Motihari, Near Janpul<br>In Front of Smart Bazar</div>
+      <div class="sub">Bihar, India</div>
+      <div class="banner">🚚 Home Delivery Available</div>
+      <div class="delivery-rates">
+        <h4>Delivery Charges</h4>
+        <ul>
+          <li><span>Under 3 km</span><span>₹30</span></li>
+          <li><span>4 to 5 km</span><span>₹40</span></li>
+          <li><span>5 to 6 km</span><span>₹50</span></li>
+        </ul>
+      </div>
+      <div>
+        <a class="btn btn-outline-dark btn-sm" id="directions-btn" href="#" target="_blank" rel="noopener">Get Directions</a>
+      </div>
+    </div>
+    <div class="map-frame">
+      <iframe title="Tiramisu Hub location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=Smart+Bazar+Janpul+Motihari+Bihar&output=embed"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section id="contact" class="on-dark">
+  <div class="wrap contact-grid">
+    <div>
+      <div class="eyebrow">Get In Touch</div>
+      <h2 class="section-title">Contact Us</h2>
+      <p class="section-lede">Questions, bulk orders, or just craving tiramisu — reach out any way that's easiest.</p>
+      <div class="contact-actions">
+        <a href="tel:+918084022024"><svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5c0 9 7 16 16 16l3-4-6-3-2 2c-3-1-5-3-6-6l2-2-3-6-4 3Z"/></svg> Call: +91 80840 22024</a>
+        <a href="https://wa.me/918084022024" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 20l1.4-4A8 8 0 1 1 9 19l-5 1Z"/></svg> WhatsApp: +91 80840 22024</a>
+        <a href="https://instagram.com/imaajax" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg> Instagram: @imaajax</a>
+        <a href="https://instagram.com/aressvlog" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg> Instagram: @aressvlog</a>
+      </div>
+    </div>
+    <form id="contact-form">
+      <input type="text" name="name" placeholder="Your name" required aria-label="Your name">
+      <input type="tel" name="phone" placeholder="Phone number" required aria-label="Phone number">
+      <textarea name="message" rows="4" placeholder="What would you like to order or ask?" aria-label="Message"></textarea>
+      <button type="submit" class="btn btn-gold" style="justify-content:center;">Send Message</button>
+      <div id="form-status" role="status"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px;"><span class="mark">TH</span><span class="word" style="color:#f3e9d2;">Tiramisu Hub</span></div>
+        <p style="max-width:280px;font-size:13.5px;line-height:1.7;">Freshly crafted, rich &amp; creamy tiramisu — made with love in Motihari.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#menu">Order Now</a></li>
+          <li><a href="#flavors">Flavors</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#location">Location</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li>Near Janpul, In Front of Smart Bazar, Motihari</li>
+          <li>+91 80840 22024</li>
+          <li><a href="https://instagram.com/imaajax" target="_blank" rel="noopener">@imaajax</a></li>
+          <li><a href="https://instagram.com/aressvlog" target="_blank" rel="noopener">@aressvlog</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> Tiramisu Hub, Motihari. All rights reserved.</span>
+      <span>Designed for a cozy, premium dessert experience.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= CART DRAWER ================= -->
+<div id="cart-overlay"></div>
+<aside id="cart-drawer" aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Cart</h3>
+    <button id="cart-close" aria-label="Close cart">&times;</button>
+  </div>
+  <div id="cart-items"></div>
+  <div class="cart-foot">
+    <div class="cart-customer">
+      <input type="text" id="cust-name" placeholder="Your name" aria-label="Your name">
+      <div id="map-hint">Tap the map to drop your delivery pin (gold marker = Tiramisu Hub)</div>
+      <div id="delivery-map"></div>
+      <div id="delivery-summary">No delivery location picked yet</div>
+      <input type="text" id="cust-landmark" placeholder="Landmark / house no. (optional)" aria-label="Landmark or house number">
+      <div id="cust-error"></div>
+    </div>
+    <div class="cart-total-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+    <div class="cart-total-row cart-total-sub"><span>Delivery</span><span id="cart-delivery">—</span></div>
+    <div class="cart-total-row cart-grand"><span>Grand Total</span><span id="cart-grandtotal">₹0</span></div>
+    <button type="button" id="whatsapp-checkout" class="btn btn-gold">Checkout via WhatsApp</button>
+  </div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Product data ---------------- */
+  const PRODUCTS = [
+    {
+      id: "classic",
+      name: "Classic Tiramisu",
+      price: 65,
+      category: "classic",
+      desc: "Coffee-soaked ladyfingers layered with silky mascarpone cream and a dusting of cocoa."
+    },
+    {
+      id: "biscoff",
+      name: "Biscoff Flavor",
+      price: 75,
+      category: "biscoff",
+      desc: "Our classic recipe reimagined with rich, caramelized Biscoff cream and cookie crumble."
+    }
+  ];
+
+  const money = n => "₹" + n;
+
+  function dessertArt(kind){
+    if(kind === "cup"){
+      return `<svg viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="70" cy="104" rx="40" ry="9" fill="#000" opacity=".12"/>
+        <path d="M40 34 L50 96 Q70 106 90 96 L100 34 Z" fill="#d8b98a"/>
+        <path d="M44 50 L96 50 L92 68 L48 68 Z" fill="#6b4527"/>
+        <path d="M46 74 L94 74 L90 92 L50 92 Z" fill="#6b4527" opacity=".85"/>
+        <path d="M40 34 Q70 24 100 34 L96 50 L44 50 Z" fill="#f1e4c9"/>
+        <g fill="#4a2f1c" opacity=".6"><circle cx="58" cy="32" r="1.6"/><circle cx="70" cy="28" r="1.6"/><circle cx="82" cy="32" r="1.6"/></g>
+      </svg>`;
+    }
+    return `<svg viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="70" cy="104" rx="46" ry="9" fill="#000" opacity=".12"/>
+      <rect x="32" y="46" width="76" height="46" rx="4" fill="#d8b98a"/>
+      <rect x="36" y="58" width="68" height="10" fill="#6b4527" opacity=".9"/>
+      <rect x="36" y="74" width="68" height="10" fill="#6b4527" opacity=".75"/>
+      <rect x="32" y="40" width="76" height="10" rx="3" fill="#f1e4c9"/>
+      <g fill="#4a2f1c" opacity=".6"><circle cx="46" cy="43" r="1.4"/><circle cx="58" cy="41" r="1.4"/><circle cx="70" cy="44" r="1.4"/><circle cx="82" cy="41" r="1.4"/><circle cx="94" cy="43" r="1.4"/></g>
+    </svg>`;
+  }
+
+  /* ---------------- Render: Featured Flavors ---------------- */
+  const featuredGrid = document.getElementById("featured-grid");
+  PRODUCTS.forEach((p, i) => {
+    const card = document.createElement("div");
+    card.className = "p-card reveal";
+    card.innerHTML = `
+      <div class="art">${dessertArt(i === 0 ? "slice" : "cup")}</div>
+      <div class="body">
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <div class="row">
+          <span class="price">${money(p.price)}</span>
+          <button class="add-btn" data-id="${p.id}">Add to Cart</button>
+        </div>
+      </div>`;
+    featuredGrid.appendChild(card);
+  });
+
+  /* ---------------- Render: Menu grid (filterable) ---------------- */
+  const menuGrid = document.getElementById("menu-grid");
+  const menuEmpty = document.getElementById("menu-empty");
+  let activeFilter = "all";
+  let searchTerm = "";
+
+  function renderMenu(){
+    const items = PRODUCTS.filter(p => {
+      const matchesFilter = activeFilter === "all" || p.category === activeFilter;
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm);
+      return matchesFilter && matchesSearch;
+    });
+    menuGrid.innerHTML = "";
+    if(items.length === 0){
+      menuEmpty.style.display = "block";
+      menuGrid.style.display = "none";
+      return;
+    }
+    menuEmpty.style.display = "none";
+    menuGrid.style.display = "grid";
+    items.forEach((p, i) => {
+      const card = document.createElement("div");
+      card.className = "p-card in";
+      card.innerHTML = `
+        <div class="art">${dessertArt(p.category === "biscoff" ? "cup" : "slice")}</div>
+        <div class="body">
+          <h3>${p.name}</h3>
+          <p>${p.desc}</p>
+          <div class="row">
+            <span class="price">${money(p.price)}</span>
+            <button class="add-btn" data-id="${p.id}">Add to Cart</button>
+          </div>
+        </div>`;
+      menuGrid.appendChild(card);
+    });
+  }
+  renderMenu();
+
+  document.getElementById("filters").addEventListener("click", e => {
+    const btn = e.target.closest(".filter-chip");
+    if(!btn) return;
+    document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    renderMenu();
+  });
+  document.getElementById("menu-search").addEventListener("input", e => {
+    searchTerm = e.target.value.trim().toLowerCase();
+    renderMenu();
+  });
+
+  /* ---------------- Delivery map & distance-based pricing ---------------- */
+  // Approximate coordinates for Tiramisu Hub (Near Janpul, In front of Smart Bazar, Motihari).
+  // Adjust these two values if you have the exact pin for the stall.
+  const STALL_LAT = 26.6574, STALL_LNG = 84.9192;
+
+  function haversineKm(lat1, lng1, lat2, lng2){
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function deliveryFeeFor(km){
+    if(km <= 3) return 30;
+    if(km <= 5) return 40;
+    if(km <= 6) return 50;
+    return null; // outside delivery range
+  }
+
+  let custMarker = null, custLat = null, custLng = null;
+  const deliverySummaryEl = document.getElementById("delivery-summary");
+
+  const stallIcon = L.divIcon({ className: "", html: '<div class="stall-pin"></div>', iconSize: [14,14] });
+  const custIcon = L.divIcon({ className: "", html: '<div class="cust-pin"></div>', iconSize: [14,14] });
+
+  const map = L.map("delivery-map", { scrollWheelZoom: false }).setView([STALL_LAT, STALL_LNG], 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+  }).addTo(map);
+  L.marker([STALL_LAT, STALL_LNG], { icon: stallIcon }).addTo(map).bindPopup("Tiramisu Hub");
+
+  function updateDeliverySummary(){
+    if(custLat === null){
+      deliverySummaryEl.textContent = "No delivery location picked yet";
+      deliverySummaryEl.classList.remove("out-of-range");
+      return;
+    }
+    const km = haversineKm(STALL_LAT, STALL_LNG, custLat, custLng);
+    const fee = deliveryFeeFor(km);
+    if(fee === null){
+      deliverySummaryEl.textContent = `~${km.toFixed(1)} km from our stall — outside our delivery range (max 6 km). Please call us.`;
+      deliverySummaryEl.classList.add("out-of-range");
+    } else {
+      deliverySummaryEl.textContent = `~${km.toFixed(1)} km from our stall — delivery fee ₹${fee}`;
+      deliverySummaryEl.classList.remove("out-of-range");
+    }
+    renderCart();
+  }
+
+  function setCustPoint(latlng){
+    custLat = latlng.lat; custLng = latlng.lng;
+    if(custMarker){
+      custMarker.setLatLng(latlng);
+    } else {
+      custMarker = L.marker(latlng, { icon: custIcon, draggable: true }).addTo(map);
+      custMarker.on("dragend", () => setCustPoint(custMarker.getLatLng()));
+    }
+    updateDeliverySummary();
+  }
+
+  map.on("click", e => setCustPoint(e.latlng));
+
+  /* ---------------- Cart (in-memory only, no storage) ---------------- */
+  const cart = {}; // id -> qty
+  const cartItemsEl = document.getElementById("cart-items");
+  const cartCountEl = document.getElementById("cart-count");
+  const cartSubtotalEl = document.getElementById("cart-subtotal");
+  const cartDeliveryEl = document.getElementById("cart-delivery");
+  const cartGrandtotalEl = document.getElementById("cart-grandtotal");
+  const cartEmptyMsg = () => `<div id="cart-empty">Your cart is empty. Add a flavor to get started.</div>`;
+
+  function findProduct(id){ return PRODUCTS.find(p => p.id === id); }
+
+  function currentDeliveryFee(){
+    if(custLat === null) return null;
+    return deliveryFeeFor(haversineKm(STALL_LAT, STALL_LNG, custLat, custLng));
+  }
+
+  function renderCart(){
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+    if(ids.length === 0){
+      cartItemsEl.innerHTML = cartEmptyMsg();
+    } else {
+      cartItemsEl.innerHTML = ids.map(id => {
+        const p = findProduct(id);
+        return `
+        <div class="cart-item" data-id="${id}">
+          <div style="flex:1;">
+            <div class="ci-name">${p.name}</div>
+            <div class="ci-price">${money(p.price)} each</div>
+          </div>
+          <div class="qty">
+            <button class="qty-dec" aria-label="Decrease quantity">−</button>
+            <span>${cart[id]}</span>
+            <button class="qty-inc" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="ci-remove" aria-label="Remove item">Remove</button>
+        </div>`;
+      }).join("");
+    }
+    const subtotal = ids.reduce((sum, id) => sum + cart[id] * findProduct(id).price, 0);
+    const count = ids.reduce((sum, id) => sum + cart[id], 0);
+    const fee = currentDeliveryFee();
+
+    cartSubtotalEl.textContent = money(subtotal);
+    cartCountEl.textContent = count;
+    cartDeliveryEl.textContent = custLat === null ? "—" : (fee === null ? "Out of range" : money(fee));
+    cartGrandtotalEl.textContent = money(subtotal + (fee || 0));
+  }
+  renderCart();
+
+  /* ---------------- WhatsApp checkout: requires name + a dropped map pin ---------------- */
+  document.getElementById("whatsapp-checkout").addEventListener("click", () => {
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+    const nameEl = document.getElementById("cust-name");
+    const errEl = document.getElementById("cust-error");
+    const landmark = document.getElementById("cust-landmark").value.trim();
+    const name = nameEl.value.trim();
+
+    nameEl.classList.remove("invalid");
+
+    if(ids.length === 0){
+      errEl.textContent = "Your cart is empty — add a flavor first.";
+      return;
+    }
+    if(!name){
+      errEl.textContent = "Please add your name before checkout.";
+      nameEl.classList.add("invalid");
+      nameEl.focus();
+      return;
+    }
+    if(custLat === null){
+      errEl.textContent = "Please tap the map to drop your delivery pin.";
+      return;
+    }
+    const km = haversineKm(STALL_LAT, STALL_LNG, custLat, custLng);
+    const fee = deliveryFeeFor(km);
+    if(fee === null){
+      errEl.textContent = `That pin is ~${km.toFixed(1)} km away — outside our delivery range. Please call us to check.`;
+      return;
+    }
+    errEl.textContent = "";
+
+    const subtotal = ids.reduce((sum, id) => sum + cart[id] * findProduct(id).price, 0);
+    const lines = ids.map(id => `${cart[id]} x ${findProduct(id).name} (${money(findProduct(id).price)} each)`);
+    const mapLink = `https://maps.google.com/?q=${custLat},${custLng}`;
+    const msg = `Hi Tiramisu Hub! I'd like to order:\n${lines.join("\n")}\nSubtotal: ${money(subtotal)}\nDelivery (~${km.toFixed(1)} km): ${money(fee)}\nGrand Total: ${money(subtotal + fee)}\n\nName: ${name}\nLandmark: ${landmark || "-"}\nPin location: ${mapLink}`;
+    window.open(`https://wa.me/918084022024?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+  });
+
+  document.addEventListener("click", e => {
+    const addBtn = e.target.closest(".add-btn");
+    if(addBtn){
+      const id = addBtn.dataset.id;
+      cart[id] = (cart[id] || 0) + 1;
+      renderCart();
+      openCart();
+      return;
+    }
+    if(e.target.closest(".qty-inc")){
+      const id = e.target.closest(".cart-item").dataset.id;
+      cart[id] += 1; renderCart(); return;
+    }
+    if(e.target.closest(".qty-dec")){
+      const id = e.target.closest(".cart-item").dataset.id;
+      cart[id] = Math.max(0, cart[id] - 1); renderCart(); return;
+    }
+    if(e.target.closest(".ci-remove")){
+      const id = e.target.closest(".cart-item").dataset.id;
+      cart[id] = 0; renderCart(); return;
+    }
+  });
+
+  /* ---------------- Cart drawer open/close ---------------- */
+  const drawer = document.getElementById("cart-drawer");
+  const overlay = document.getElementById("cart-overlay");
+  function openCart(){ drawer.classList.add("open"); overlay.classList.add("open"); setTimeout(() => map.invalidateSize(), 260); }
+  function closeCart(){ drawer.classList.remove("open"); overlay.classList.remove("open"); }
+  document.getElementById("cart-toggle").addEventListener("click", openCart);
+  document.getElementById("cart-close").addEventListener("click", closeCart);
+  overlay.addEventListener("click", closeCart);
+
+  /* ---------------- Mobile nav ---------------- */
+  const navLinks = document.getElementById("nav-links");
+  const burger = document.getElementById("nav-burger");
+  burger.addEventListener("click", () => {
+    const open = navLinks.classList.toggle("open");
+    burger.setAttribute("aria-expanded", open);
+  });
+  navLinks.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+    navLinks.classList.remove("open");
+    burger.setAttribute("aria-expanded", "false");
+  }));
+
+  /* ---------------- Scroll reveal ---------------- */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("in");
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".p-card, .why-card, .step, .reveal").forEach(el => io.observe(el));
+
+  /* ---------------- Contact form (client-side demo — wire to a backend/email service to go live) ---------------- */
+  document.getElementById("contact-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const status = document.getElementById("form-status");
+    status.textContent = "Thanks! We'll get back to you shortly. For a faster reply, use WhatsApp above.";
+    e.target.reset();
+  });
+
+  /* ---------------- Get Directions link ---------------- */
+  document.getElementById("directions-btn").href =
+    "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent("Smart Bazar, Janpul, Motihari, Bihar");
+
+  /* ---------------- Footer year ---------------- */
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+})();
+</script>
+</body>
+</html>
